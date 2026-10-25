@@ -1,0 +1,27 @@
+__pycache__/
+*.pyc
+.venv/
+.playwright/
+.env
+.env.*
+runs/
+exports/
+jobs/
+workspace/
+private/
+secrets/
+*.local.*
+*.log
+browser_session*.json
+.pytest_cache/
+.DS_Store
+Thumbs.db
+/tmp/
+/output/
+/screenshots/
+/recordings/
+/downloads/
+IRCTC Tatkal booking.pdf
+# Local General-quota rehearsal material (not part of the GitHub version).
+/skills/irctc-general-book.md
+/reliability-challenges.md

@@ -1,0 +1,17 @@
+{
+  "mode": "rehearsal",
+  "origin": {"name": "<origin station name>", "code": "<origin station code>"},
+  "destination": {"name": "<destination station name>", "code": "<destination station code>"},
+  "booking_date_ist": "<YYYY-MM-DD>",
+  "journey_date": "<YYYY-MM-DD>",
+  "quota": "TATKAL",
+  "allowed_classes": [],
+  "max_total_fare_inr": null,
+  "tie_break": "earliest departure, then lowest train number",
+  "passenger_file": "irctc_passenger.local.json",
+  "credentials_file": "irctc_credentials.local.json",
+  "payment_method": "BHIM/UPI",
+  "gateway_preference": "IRCTC iPay New",
+  "search_report_file": "irctc_search_report.local.md",
+  "booking_report_file": "irctc_booking_report.local.md"
+}

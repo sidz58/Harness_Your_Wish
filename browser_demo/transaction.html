@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock transaction demo</title>
+<style>
+body { font: 18px/1.5 system-ui; max-width: 680px; margin: 40px auto; padding: 24px; background: #f5f7fb; color: #172238; }
+label { display: block; margin-top: 16px; } input, button { font: inherit; padding: 10px; }
+input { display: block; width: 90%; } button { margin-top: 20px; cursor: pointer; }
+#notice { padding: 12px; background: #fff0c5; } #receipt { padding: 16px; background: #dcf4e6; }
+</style>
+<h1>Mock transaction demo</h1>
+<p id="notice">Local fixture. No real account, money, payment or network submission is involved.</p>
+<section id="app"></section>
+<script>
+'use strict';
+const app=document.getElementById('app');
+const key='alum_mock_transaction';
+const read=()=>JSON.parse(localStorage.getItem(key)||'{"draft":null,"transactions":[]}');
+const save=state=>localStorage.setItem(key,JSON.stringify(state));
+function paragraph(text) { const p=document.createElement('p');p.textContent=text;app.append(p);return p; }
+function render() {
+    app.replaceChildren();
+    const cookie=document.cookie.split('; ').find(value=>value.startsWith('alum_mock_user='));
+    const user=localStorage.getItem('alum_mock_user');
+    if(!cookie||!user||decodeURIComponent(cookie.split('=')[1])!==user) {
+        app.innerHTML='<form><label for="username">Demo username</label><input id="username" required><button>Sign in</button></form>';
+        app.querySelector('form').onsubmit=event=>{
+            event.preventDefault();
+            const value=document.getElementById('username').value;
+            document.cookie='alum_mock_user='+encodeURIComponent(value)+'; Path=/; SameSite=Strict';
+            localStorage.setItem('alum_mock_user',value);
+            render();
+        };
+        return;
+    }
+    paragraph('Signed in as '+user+'.');
+    const state=read();
+    paragraph('Confirmed transactions: '+state.transactions.length+'.');
+    if(state.transactions.length) {
+        const receipt=state.transactions.at(-1);
+        paragraph(`Confirmed mock transaction: ${receipt.amount} demo credits to ${receipt.recipient}.`).id='receipt';
+    }
+    if(state.draft) {
+        paragraph(`Pending transaction: ${state.draft.amount} demo credits to ${state.draft.recipient}.`);
+        const button=document.createElement('button');
+        button.textContent='Confirm mock transaction';
+        button.onclick=()=>{
+            const current=read();
+            if(!current.draft) throw new Error('No pending mock transaction');
+            current.transactions.push({...current.draft,id:crypto.randomUUID()});
+            current.draft=null;
+            save(current);
+            render();
+        };
+        app.append(button);
+    } else {
+        const form=document.createElement('form');
+        form.innerHTML='<label for="recipient">Recipient</label><input id="recipient" required><label for="amount">Demo credits</label><input id="amount" inputmode="numeric" pattern="[1-9][0-9]*" required><button>Prepare transaction</button>';
+        form.onsubmit=event=>{
+            event.preventDefault();
+            state.draft={recipient:document.getElementById('recipient').value,amount:document.getElementById('amount').value};
+            save(state);
+            render();
+        };
+        app.append(form);
+    }
+}
+render();
+</script>
+</html>

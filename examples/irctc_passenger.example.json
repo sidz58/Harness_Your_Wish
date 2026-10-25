@@ -1,0 +1,17 @@
+{
+  "legal_name": "",
+  "age_on_journey": null,
+  "gender": "",
+  "nationality": "",
+  "berth_preference": "No Preference",
+  "contact": {"country_code": "", "mobile": "", "email": ""},
+  "insurance_preference": "leave_existing",
+  "account_authentication": {
+    "aadhaar_already_verified": null,
+    "account_holder_name": "",
+    "aadhaar_or_vid": "",
+    "date_of_birth": "",
+    "gender": "",
+    "authentication_consent_authorized": false
+  }
+}

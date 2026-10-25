@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Control recovery demo</title>
+<style>
+body { font: 18px/1.5 system-ui; max-width: 700px; margin: 40px auto; padding: 24px; }
+label { display: block; margin-top: 20px; } input, select, button { font: inherit; padding: 10px; }
+[role=option] { cursor: pointer; border: 1px solid #aaa; padding: 10px; }
+</style>
+<h1>Control recovery demo</h1>
+<p>Local fixture for different control types. No external actions.</p>
+<label for="topic">Search topic</label>
+<input id="topic" role="combobox" aria-expanded="false" aria-controls="options" autocomplete="off">
+<div id="options" role="listbox" hidden><div role="option" tabindex="0">General tools</div></div>
+<p id="selection" role="status">No topic selected.</p>
+<label for="delivery">Delivery mode</label>
+<select id="delivery"><option>Standard</option><option>Express</option></select>
+<p id="mode" role="status">Delivery mode: Standard</p>
+<label for="note">Note</label><input id="note">
+<button id="save">Save note</button>
+<p id="saved" role="status">No note saved.</p>
+<script>
+const topic=document.getElementById('topic'), options=document.getElementById('options');
+topic.oninput=()=>{options.hidden=false;topic.setAttribute('aria-expanded','true');};
+options.firstElementChild.onclick=()=>{
+    topic.value='General tools'; options.hidden=true;topic.setAttribute('aria-expanded','false');
+    document.getElementById('selection').textContent='Selected topic: General tools.';
+};
+topic.onkeydown=e=>{
+    if(e.key==='ArrowDown'){e.preventDefault();options.firstElementChild.setAttribute('aria-selected','true');}
+    if(e.key==='Enter'&&!options.hidden){e.preventDefault();options.firstElementChild.click();}
+};
+document.getElementById('delivery').onchange=e=>document.getElementById('mode').textContent='Delivery mode: '+e.target.value;
+function saveNote(){document.getElementById('saved').textContent='Saved note: '+document.getElementById('note').value;}
+document.getElementById('save').onclick=saveNote;
+document.getElementById('note').onkeydown=e=>{if(e.key==='Enter')saveNote();};
+</script>
+</html>

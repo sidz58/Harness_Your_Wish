@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>List extraction demo</title>
+<style>body{font:18px/1.5 system-ui;max-width:720px;margin:40px auto}article{padding:8px;border:1px solid #ddd;margin:8px}#noise{font-size:10px;max-height:100px;overflow:hidden}</style>
+<h1>List extraction demo</h1>
+<p>Local rendered lists, duplicate titles, an empty source, and an alternate source.</p>
+<main aria-label="Catalog">
+<p id="noise"></p>
+<h3 hidden>Hidden item must not be extracted</h3>
+<div id="items"></div>
+</main>
+<button id="alternate">Search something else</button>
+<script>
+'use strict';
+const values=['Zeta','Alpha','Gamma','Beta','Gamma','Delta'];
+const items=document.getElementById('items');
+function render(empty,alternate=false){
+    items.replaceChildren();
+    if(empty){const p=document.createElement('p');p.textContent='No items are available.';items.append(p);return;}
+    for(const [index,value] of values.entries()){
+        const article=document.createElement('article');
+        const heading=document.createElement('h3');
+        const a=document.createElement('a');
+        a.href='#item-'+index;
+        a.textContent=alternate?'Alternate '+value:value;
+        heading.append(a);article.append(heading);items.append(article);
+    }
+}
+document.getElementById('noise').textContent='Unrelated content. '.repeat(1200);
+const params=new URLSearchParams(location.search);
+render(params.has('empty'),params.has('alternate'));
+document.getElementById('alternate').onclick=()=>{
+    history.pushState({},'',location.pathname+'?alternate=1');render(false,true);
+};
+</script>
+</html>

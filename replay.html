@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alum Track · Run replay</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#10151d;color:#e5eaf1;font:15px/1.5 system-ui,sans-serif}header,main{max-width:1400px;margin:auto;padding:24px}header{border-bottom:1px solid #344150}h1{font-size:26px;margin:0 0 8px}h2{font-size:18px;margin:0 0 12px}p{margin:8px 0}.muted{color:#a8b8cc}#summary{display:flex;gap:12px;flex-wrap:wrap}.badge,button,select,input{border:1px solid #42536a;border-radius:6px;background:#1c2838;color:inherit;padding:8px 12px;font:inherit}button{cursor:pointer}button:disabled{opacity:.4}button:hover{border-color:#82c9ff}#warnings{color:#ffd18a}#warnings:empty{display:none}.layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:24px}.panel{border:1px solid #344150;border-radius:10px;padding:18px;background:#151f2b;min-width:0}nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}#timeline{max-height:70vh;overflow:auto;display:flex;flex-direction:column;gap:6px}#timeline button{text-align:left;width:100%;overflow-wrap:anywhere}#timeline button.active{background:#244362;border-color:#88cbff}.error{color:#ffb2b2}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#10151d;padding:12px;border-radius:6px;max-height:440px;overflow:auto}img,video{max-width:100%;max-height:65vh;display:block;margin:12px auto;background:#000}a{color:#92d1ff}details{margin:14px 0}#recordings{margin-top:24px}#task{white-space:pre-wrap;overflow-wrap:anywhere}@media(max-width:850px){.layout{grid-template-columns:1fr}#timeline{max-height:240px}header,main{padding:16px}}
+</style>
+<header><p class="muted">ALUM TRACK / LOCAL EVIDENCE</p><h1>Run replay</h1><p id="run" class="muted"></p><p id="task"></p><div id="summary"></div></header>
+<main><section id="load-error" class="panel error"><h2>Replay data has not loaded</h2><p>If you opened <code>Alum_Track/replay.html</code>, this is the viewer template. Open the generated file at <code>runs/RUN_ID/replay.html</code> or <code>exports/EXPORT_FOLDER/replay.html</code>.</p><p>If you already opened a generated file, enable JavaScript and check the browser console for the loading error.</p></section><section id="warnings" class="panel"></section><nav style="margin-top:20px"><button id="prev">← Previous</button><button id="play">Play steps</button><button id="next">Next →</button><select id="filter" aria-label="Filter timeline"><option value="all">All events</option><option value="steps">Tool steps</option><option value="issues">Failures & handoffs</option></select><input id="search" aria-label="Search events" placeholder="Search events"></nav>
+<div class="layout"><aside class="panel"><h2>Timeline</h2><div id="timeline"></div></aside><section class="panel" id="detail" aria-live="polite"></section></div>
+<section id="recordings" class="panel"><h2>Screen recording</h2><p class="muted">Segments are separate process sessions. Step playback navigates saved evidence; it does not execute actions.</p><div id="videos"></div></section>
+<section class="panel" style="margin-top:24px"><h2>Outcome & attached artifacts</h2><pre id="outcome"></pre><div id="artifacts"></div><p class="muted">Model visual assessments are not independent proof. Review screenshots and file/browser checks. This viewer uses no network services.</p></section></main>
+<script id="run-data" type="application/json">__RUN_DATA__</script>
+<script>
+'use strict';
+const data=JSON.parse(document.getElementById('run-data').textContent);
+const $=id=>document.getElementById(id), pretty=value=>JSON.stringify(value,null,2);
+const node=(tag,text,parent)=>{const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(parent)parent.append(el);return el};
+const url=path=>'./'+path.split('/').map(encodeURIComponent).join('/');
+const assetExists=path=>data.assets.includes(path);
+$('run').textContent=data.run_id;
+$('task').textContent=data.events.find(e=>e.task)?.task||'Task not recorded';
+const result=data.result, lastUsage=data.events.filter(e=>e.event==='model_usage').at(-1);
+for(const text of [result.status||'No saved outcome',`Requests: ${result.requests??'unknown'}`,`Reported tokens: ${result.tokens??lastUsage?.cumulative_tokens??'unknown'}`])node('span',text,$('summary')).className='badge';
+for(const warning of data.warnings)node('p',warning,$('warnings'));
+$('outcome').textContent=pretty(result);
+for(const path of data.artifacts||[]){const a=node('a',path,$('artifacts'));a.href=url(path);a.download='';node('br',undefined,$('artifacts'));}
+for(const path of data.assets.filter(p=>p.endsWith('.mp4'))){node('p',path,$('videos'));const video=node('video',undefined,$('videos'));video.controls=true;video.preload='metadata';video.src=url(path);video.addEventListener('error',()=>node('p','Video cannot be played. Inspect the recording status and try a compatible player.',$('videos')));}
+if(!$('videos').children.length)node('p','No video available.',$('videos'));
+// Keep lifecycle/usage entries, but group tool responses and screenshots into their action.
+const rows=data.events.filter(e=>!['tool_result','step_screenshot','image_observation'].includes(e.event));
+let visible=[],selected=0,timer=null;
+function failed(e){return e.status==='failed'||['recording_failed','recovery_stop'].includes(e.event)||(e.event==='tool_call'&&data.events.some(r=>r.event==='tool_result'&&r.step===e.step&&r.result.ok===false));}
+function label(e){return e.event==='tool_call'?`[${e.step}] ${e.name}`:e.event==='state'?`State: ${e.status}`:e.event==='model_usage'?`Usage: request ${e.request} · ${e.cumulative_tokens} tokens`:e.event==='resumed'?'Resumed':e.event==='approval_decision'?`Approval: ${e.decision}`:e.event.replaceAll('_',' ');}
+function show(index) {
+    selected=Math.max(0,Math.min(index,visible.length-1));
+    $('detail').replaceChildren();
+    $('prev').disabled=selected<=0;
+    $('next').disabled=selected>=visible.length-1;
+    [...$('timeline').children].forEach((b,i)=>b.classList.toggle('active',i===selected));
+    const e=visible[selected];
+    if(!e) {
+        node('p','No matching events.',$('detail'));
+        return;
+    }
+    node('h2',label(e),$('detail'));
+    node('p',e.time,$('detail')).className='muted';
+    if(e.arguments?.reason) node('p',e.arguments.reason,$('detail'));
+    const related=e.event==='tool_call'
+        ? data.events.filter(r=>r.step===e.step&&['tool_result','step_screenshot'].includes(r.event))
+        : [];
+    const shots=related.flatMap(r=>r.screenshot
+        ? [{path:r.screenshot,label:r.phase+' action'}]
+        : r.result?.screenshot ? [{path:r.result.screenshot,label:'Tool observation'}] : []);
+    if(e.event==='tool_call'&&!shots.length) {
+        node('p','No screenshot captured for this step.',$('detail')).className='muted';
+    }
+    for(const shot of shots) {
+        node('p',shot.label,$('detail'));
+        if(assetExists(shot.path)) {
+            const img=node('img',undefined,$('detail'));
+            img.src=url(shot.path);
+            img.alt=shot.label;
+            img.loading='lazy';
+        } else {
+            node('p','Missing image: '+shot.path,$('detail')).className='error';
+        }
+    }
+    for(const record of [e,...related.filter(r=>r.event==='tool_result')]) {
+        const d=node('details',undefined,$('detail'));
+        d.open=true;
+        node('summary',record.event==='tool_result'
+            ? (record.result.ok?'Result':'Tool error') : 'Event details',d);
+        node('pre',pretty(record),d);
+    }
+}
+function refresh() {
+    const term=$('search').value.toLowerCase(),filter=$('filter').value;
+    visible=rows.filter(e=>(
+        filter==='all'
+        || filter==='steps'&&e.event==='tool_call'
+        || filter==='issues'&&(failed(e)||['ask_user','report_blocker'].includes(e.name)||['waiting_for_input','waiting_for_approval','cancelled','blocked'].includes(e.status)||e.event==='resumed'||e.event.startsWith('approval_'))
+    )&&pretty(e).toLowerCase().includes(term));
+    $('timeline').replaceChildren();
+    visible.forEach((e,i)=>{
+        const b=node('button',label(e),$('timeline'));
+        if(failed(e)) b.classList.add('error');
+        b.onclick=()=>show(i);
+    });
+    show(0);
+}
+$('prev').onclick=()=>show(selected-1);$('next').onclick=()=>show(selected+1);
+function stop(){clearInterval(timer);timer=null;$('play').textContent='Play steps';}
+$('play').onclick=()=>{if(timer){stop();return;}if(selected>=visible.length-1)show(0);$('play').textContent='Pause';timer=setInterval(()=>{if(selected>=visible.length-1){stop();return;}show(selected+1);},1500);};
+$('filter').onchange=()=>{stop();refresh();};$('search').oninput=()=>{stop();refresh();};refresh();
+$('load-error').hidden=true;
+</script>
+</html>

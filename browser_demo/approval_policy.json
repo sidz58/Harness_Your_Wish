@@ -1,0 +1,8 @@
+{
+  "rules": [
+    {
+      "tool": "browser_click",
+      "match": {"role": "button", "name": "Confirm mock transaction"}
+    }
+  ]
+}

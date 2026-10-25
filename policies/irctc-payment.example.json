@@ -1,0 +1,8 @@
+{
+  "rules": [
+    {"tool": "browser_click", "match": {"role": "button", "name": "Pay & Book"}},
+    {"tool": "browser_press", "match": {"role": "button", "name": "Pay & Book"}},
+    {"tool": "browser_click", "match": {"role": "button", "name": "Pay Now"}},
+    {"tool": "browser_press", "match": {"role": "button", "name": "Pay Now"}}
+  ]
+}

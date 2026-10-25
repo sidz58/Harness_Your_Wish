@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1c2c24">
+  <title>Wish · Your agent, at work</title>
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <style>
+    :root {
+      --font: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+      --mono: "Cascadia Code", "Consolas", monospace;
+      --ink: #22362b; --muted: #6e7c72; --line: #e1e7dd; --paper: #f6f7f2;
+      --green: #b9ed87; --deep: #1c2c24; --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 28px; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    button, input, textarea, select { font: inherit; }
+    button, a, select, input[type=checkbox] { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; }
+    button:focus-visible, a:focus-visible { outline: 3px solid #7fae63; outline-offset: 4px; }
+    h1, h2, h3, h4, p { margin: 0; }
+    h1, h2, h3, h4 { font-family: var(--font); }
+    .shell { min-height: 100vh; display: grid; grid-template-columns: 224px minmax(0, 1fr); }
+    .side { background: var(--deep); padding: 32px 20px 24px; color: #f1f6ee; display: flex; flex-direction: column; gap: 48px; }
+    .brand { display: flex; gap: 12px; align-items: center; padding: 0 8px; text-decoration: none; color: inherit; }
+    .brand img { width: 44px; height: 44px; border-radius: 13px; display: block; }
+    .brandname { font: 700 27px/1.2 "Space Grotesk", Arial, sans-serif; letter-spacing: -1.1px; }
+    .brand-sub { font-size: 8px; color: #adbeaf; letter-spacing: .8px; margin-top: 5px; white-space: nowrap; }
+    .nav { display: grid; gap: 9px; }
+    .nav a { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 11px; color: #b8c7bc; text-decoration: none; font-size: 13px; font-weight: 500; transition: background .15s, color .15s; }
+    .nav a:hover { color: white; background: #2b3e32; }
+    .nav a.active { color: #edf7e8; background: #334737; }
+    .nav svg { width: 18px; height: 18px; flex: 0 0 auto; }
+    .side-note { margin-top: auto; border-top: 1px solid #3a4a3f; padding: 24px 10px 0; }
+    .side-note strong { font-size: 12px; font-weight: 600; color: #e8f0e5; display: block; margin-bottom: 8px; }
+    .side-note p { color: #a3b5a8; font-size: 12px; line-height: 1.85; }
+    .side-bottom { color: #91a497; font-size: 10px; letter-spacing: 1.2px; padding: 0 10px; margin-top: -20px; }
+    main { width: 100%; max-width: 1450px; margin: 0 auto; padding: 42px clamp(24px, 3.8vw, 60px) 28px; min-width: 0; }
+    .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 35px; }
+    .eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 1.7px; text-transform: uppercase; color: #7c8b7b; margin-bottom: 10px; }
+    h1 { font-size: clamp(25px, 2.5vw, 34px); font-weight: 600; letter-spacing: -1.1px; line-height: 1.25; }
+    .intro { color: var(--muted); font-size: 13px; margin-top: 11px; }
+    .local { flex-shrink: 0; display: flex; align-items: center; gap: 9px; font-size: 11px; color: #5c6b60; border: 1px solid var(--line); padding: 8px 13px; border-radius: 30px; background: #fff; margin-top: 8px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #6fa353; box-shadow: 0 0 0 3px #edf3e8; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 4px 16px #23342103; }
+    .composer { padding: 28px; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 23px; }
+    h2 { font-size: 17px; font-weight: 600; letter-spacing: -.3px; }
+    .number { width: 23px; height: 23px; display: inline-grid; place-items: center; background: #eef3e9; border-radius: 7px; font-size: 11px; color: #738366; margin-right: 8px; vertical-align: 1px; }
+    .badge { border: 1px solid #e0ead6; background: #f3f8ee; color: #627d49; padding: 4px 9px; font-size: 10px; font-weight: 600; border-radius: 6px; white-space: nowrap; }
+    .field-label { display: block; color: #435846; font-size: 13px; font-weight: 600; margin-bottom: 9px; }
+    .optional { font-size: 11px; color: #8d978e; font-weight: 400; margin-left: 5px; }
+    .taskbox { border: 1px solid #dce4d7; border-radius: 13px; background: #fafcf8; transition: border .15s, box-shadow .15s; overflow: hidden; }
+    .taskbox:focus-within { border-color: #95b77b; box-shadow: 0 0 0 3px #b9ed8729; }
+    textarea { display: block; width: 100%; min-height: 174px; resize: vertical; border: 0; outline: none; padding: 16px 17px 8px; color: var(--ink); background: transparent; font-size: 14px; line-height: 1.8; }
+    textarea::placeholder { color: #97a28f; }
+    .input-foot { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px 12px; font-size: 10px; color: #8b9785; }
+    .example { background: transparent; border: 0; padding: 0; color: #6d865b; font-size: 11px; text-decoration: underline; text-decoration-color: #c4d3b7; text-underline-offset: 3px; }
+    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 23px; }
+    select { width: 100%; border: 1px solid #dfe5da; border-radius: 10px; padding: 10px 30px 10px 12px; background: #fff; color: #475d48; min-height: 44px; font-size: 13px; }
+    select:focus-visible { outline: 3px solid #e7f1df; border-color: #95b77b; }
+    .switches { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 21px; }
+    .toggle { border: 1px solid #e4e9df; border-radius: 11px; padding: 12px; display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+    .toggle:has(input:checked) { background: #f5f9ef; border-color: #c9dbb7; }
+    .toggle input { width: 15px; height: 15px; margin: 3px 0 0; accent-color: #739d50; flex-shrink: 0; }
+    .toggle strong { display: block; font-size: 12px; font-weight: 600; color: #4a604a; }
+    .toggle small { display: block; font-size: 11px; color: #85917f; margin-top: 3px; line-height: 1.5; }
+    .run { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; margin-top: 23px; border: 1px solid #a8db76; background: var(--green); color: #284126; min-height: 47px; border-radius: 11px; font-weight: 600; font-size: 13px; transition: background .15s; }
+    .run svg { width: 15px; height: 15px; }
+    .run:hover:enabled { background: #afe477; }
+    .run:disabled { opacity: .5; }
+    .privacy { text-align: center; color: #7e8a77; font-size: 11px; margin-top: 12px; }
+    .setup { margin: 0 0 23px; padding: 15px 17px; border-radius: 12px; border: 1px solid #e6d8b7; background: #fffaf0; color: #79603a; font-size: 12px; }
+    .setup strong { display: block; font-weight: 600; margin-bottom: 5px; }
+    .setup code { display: block; font-family: var(--mono); font-size: 11px; margin-top: 8px; line-height: 1.8; }
+    .setup p { line-height: 1.7; }
+    [hidden] { display: none !important; }
+    .error { border: 1px solid #efcfbf; background: #fff5ef; color: #9c5435; border-radius: 10px; padding: 12px 14px; margin-top: 16px; font-size: 12px; overflow-wrap: anywhere; }
+    .right { display: grid; gap: 20px; min-width: 0; }
+    .current { padding: 25px; background: #eef4e6; border: 1px solid #dce6ce; border-radius: var(--radius); }
+    .current .card-head { margin-bottom: 20px; }
+    .status { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #d4dfca; color: #708362; background: #f8fbf5; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+    .status.running { color: #517540; border-color: #b9d8a6; background: #f0f9e8; }
+    .status.failed, .status.blocked { color: #996142; border-color: #e9d0b5; background: #fff9ec; }
+    .status.succeeded { color: #427350; border-color: #bed7c4; background: #f0f8ed; }
+    .runmeta { font-family: var(--mono); font-size: 10px; color: #798c6d; overflow-wrap: anywhere; display: flex; gap: 10px; justify-content: space-between; margin: -4px 0 17px; }
+    .console { color: #d0decb; background: #1b2921; border-radius: 12px; padding: 18px; min-height: 225px; max-height: 390px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--mono); font-size: 12px; line-height: 1.85; scrollbar-color: #4d624b transparent; scrollbar-width: thin; }
+    .idle-console { min-height: 225px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 13px; color: #8c9f86; }
+    .idle-console svg { width: 29px; height: 29px; color: #a9c397; }
+    .idle-console p { font-family: var(--font); font-size: 12px; }
+    .activity-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 10px; color: #7d8e70; gap: 12px; }
+    .activity-foot button { border: 0; background: none; color: #647e53; font-size: 10px; padding: 0; }
+    .activity-foot button:hover { text-decoration: underline; }
+    .pulse { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #819c6a; margin-right: 5px; }
+    .working .pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse { 50% { opacity: .25; } }
+    .history { padding: 24px; }
+    .history .card-head { margin-bottom: 16px; }
+    .history h2 { font-size: 15px; }
+    .history-caption { font-size: 10px; color: #8c9785; }
+    .history-list { max-height: 280px; overflow: auto; scrollbar-width: thin; }
+    .runitem { padding: 14px 0; border-top: 1px solid #edf0e9; }
+    .runitem:first-child { border-top: 0; padding-top: 0; }
+    .runitem:last-child { padding-bottom: 0; }
+    .runitem p { font-size: 13px; font-weight: 500; line-height: 1.65; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .runitem small { display: block; color: #8a9583; font-size: 10px; margin-top: 6px; }
+    .history-empty { font-size: 12px; color: var(--muted); padding: 7px 0; }
+    .footer { display: flex; justify-content: space-between; gap: 18px; border-top: 1px solid var(--line); margin-top: 30px; padding-top: 17px; font-size: 10px; color: #94a08e; }
+    @media(min-width:1700px) { main { padding-top: 54px; } }
+    @media(max-width:1150px) { .shell { grid-template-columns: 190px minmax(0,1fr); } main { padding: 30px 25px; } .grid { gap: 18px; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); } .composer { padding: 23px; } .current { padding: 22px; } .switches { grid-template-columns: 1fr; gap: 9px; } .toggle { padding: 10px 12px; } .local { display: none; } }
+    @media(max-width:850px) { .shell { grid-template-columns: 78px minmax(0,1fr); } .side { padding: 27px 13px; align-items: center; } .brand { padding: 0; } .brandtext, .navtext, .side-note, .side-bottom { display: none; } .nav a { padding: 12px 13px; } .grid { grid-template-columns: 1fr; } .switches { grid-template-columns: 1fr 1fr; } .right { grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); align-items: start; } .console { min-height: 200px; } }
+    @media(max-width:620px) { .shell { display: block; } .side { flex-direction: row; height: 76px; padding: 14px 21px; justify-content: space-between; } .brandtext { display: block; } .brand img { height: 37px; width: 37px; } .brandname { font-size: 23px; } .brand-sub { display: none; } .nav { display: flex; gap: 3px; } .nav a { padding: 9px; } .nav a:last-child { display: none; } main { padding: 27px 18px 22px; } .top { margin-bottom: 25px; } .eyebrow { font-size: 9px; letter-spacing: 1px; } h1 { font-size: 26px; } .intro { font-size: 12px; } .composer, .current, .history { padding: 22px; } .right { grid-template-columns: 1fr; } .options { gap: 12px; } .switches { grid-template-columns: 1fr; } .footer { flex-direction: column; gap: 4px; } .privacy { font-size: 9px; } }
+    @media(max-width:620px) { .options { grid-template-columns: 1fr; gap: 16px; } }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="side">
+      <a class="brand" href="#new" aria-label="Wish home"><img src="/logo.svg" alt="Harness Your Wish logo"><div class="brandtext"><div class="brandname">wish</div><div class="brand-sub">HARNESS YOUR WISH</div></div></a>
+      <nav class="nav" aria-label="Console navigation">
+        <a class="active" href="#new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="navtext">New task</span></a>
+        <a href="#runs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 7M4 4v6h6M12 8v5l3 2"/></svg><span class="navtext">Run history</span></a>
+        <a href="#skills"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m12 3 9 9-9 9-9-9Z"/><path d="m8 12 3 3 5-6"/></svg><span class="navtext">Task skills</span></a>
+      </nav>
+      <div class="side-note"><strong>A little less doing.<br>A little more done.</strong><p>Give Wish an outcome.<br>Your agent takes the next step, checks its work, and keeps a record.</p></div>
+      <div class="side-bottom">LOCAL AGENT CONSOLE</div>
+    </aside>
+    <main>
+      <header class="top"><div><p class="eyebrow">Your computer. A helping hand.</p><h1>What would you like to do?</h1><p class="intro">Turn an instruction into action, one verified step at a time.</p></div><div class="local"><span class="dot"></span>On this device</div></header>
+      <div class="grid">
+        <section class="card composer" id="new" aria-labelledby="taskTitle">
+          <div class="card-head"><h2 id="taskTitle"><span class="number">01</span>Start a task</h2><span class="badge" id="providerState">Checking setup</span></div>
+          <div class="setup" id="setup" role="status" hidden><strong>Your API key isn’t available to this console.</strong><p>Stop the console and restart it from your configured Git Bash session:</p><code>source ~/.bash_profile<br>python main.py ui</code><p style="margin-top:8px">Then refresh this page. Your key stays in the server’s environment.</p></div>
+          <form id="taskForm">
+            <label class="field-label" for="task">What should Wish do?</label>
+            <div class="taskbox"><textarea id="task" maxlength="4000" placeholder="Describe your task, the result you want, and anything the agent should check along the way…" required></textarea><div class="input-foot"><button class="example" id="example" type="button">Try an example</button><span id="charCount">0 / 4,000</span></div></div>
+            <div class="options"><div id="skills"><label class="field-label" for="skill">Task skill<span class="optional">Optional</span></label><select id="skill"><option value="">No skill selected</option></select></div><div><label class="field-label" for="mode">Computer access</label><select id="mode"><option value="files">Files &amp; terminal</option><option value="browser">Browser + files</option><option value="desktop">Desktop + files</option></select></div></div>
+            <label class="field-label" for="policy">Approval policy <span class="optional">Optional project-relative JSON path</span></label>
+            <input id="policy" placeholder="browser_demo/approval_policy.json" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px">
+            <div class="switches"><label class="toggle"><input type="checkbox" id="vision" disabled><span><strong>Screenshot vision</strong><small id="visionHint">Available with browser access</small></span></label><label class="toggle"><input type="checkbox" id="record"><span><strong>Screen recording</strong><small>Capture your primary screen</small></span></label></div>
+            <button class="run" id="runButton" type="submit" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m5 4 15 8-15 8Z"/></svg><span id="buttonText">Run task</span></button>
+            <p class="privacy">Runs on your device · Uses your configured Gemini API key</p>
+            <div class="error" id="error" role="alert" hidden></div>
+          </form>
+        </section>
+        <div class="right">
+          <section class="current" aria-labelledby="currentTitle">
+            <div class="card-head"><h2 id="currentTitle">Current run</h2><span class="status" id="runStatus" role="status">Ready</span></div>
+            <div class="runmeta" id="runMeta" hidden><span id="runId"></span><span id="elapsed"></span></div>
+            <div class="console idle-console" id="console" role="log" aria-label="Agent activity"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><rect x="6" y="6" width="20" height="20" rx="5"/><path d="m12 12 9 5-5 1-2 4Z"/></svg><p>Your next task starts here.</p></div>
+            <section id="handoff" hidden style="margin-top:20px" aria-label="Human handoff">
+              <h3 id="handoffTitle"></h3><pre id="handoffDetails" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre>
+              <img id="handoffEvidence" hidden alt="Browser screenshot when approval was requested" style="width:100%;margin:12px 0">
+              <form id="answerForm"><label for="answer">Your answer</label><input id="answer" maxlength="4000" required style="width:100%;padding:12px;margin:10px 0"><button type="submit">Send answer</button></form>
+              <div id="approvalButtons" hidden><button id="approve" type="button">Approve this action</button> <button id="reject" type="button">Reject</button></div>
+              <p>Keep the console server running. The agent keeps its browser open while waiting.</p>
+            </section>
+            <div class="activity-foot" id="activityFoot"><span id="activityHint"><span class="pulse"></span>Waiting for your instruction</span><button type="button" id="copyOutput" hidden>Copy output</button></div>
+          </section>
+          <section class="card history" id="runs" aria-labelledby="historyTitle"><div class="card-head"><h2 id="historyTitle">Recent runs</h2><span class="history-caption">Saved on this device</span></div><div class="history-list" id="history"><p class="history-empty">Loading your runs…</p></div></section>
+        </div>
+      </div>
+      <footer class="footer"><span>Harness Your Wish · General computer agent</span><span>Evidence stays in your local runs folder</span></footer>
+    </main>
+  </div>
+  <script>
+    const $ = s => document.querySelector(s);
+    const consoleBox = $('#console');
+    let active = sessionStorage.getItem('wishRun'), configured = false, busy = !!active;
+    let handoffToken = null, sending = false;
+    function showHandoff(j) {
+      const p=j.pending; $('#handoff').hidden=!p;
+      if(!p) { handoffToken=null; return; }
+      const changed=handoffToken!==j.handoff_token; handoffToken=j.handoff_token;
+      const approval=!!p.approval;
+      $('#handoffTitle').textContent=approval?'Review this action':'The agent needs your answer';
+      $('#handoffDetails').textContent=approval?JSON.stringify({action:p.name,arguments:p.arguments,url:p.approval.evidence?.url,approval_id:p.approval.id},null,2):p.arguments.question;
+      $('#answerForm').hidden=approval; $('#approvalButtons').hidden=!approval;
+      $('#handoffEvidence').hidden=!p.approval?.evidence?.screenshot;
+      if(changed) { $('#answer').value=''; if(approval) $('#handoffEvidence').src='/api/runs/'+active+'/evidence'; }
+    }
+    async function respond(decision) {
+      if(sending||!active||!handoffToken) return;
+      sending=true; document.querySelectorAll('#handoff button').forEach(b=>b.disabled=true);
+      try { await api('/api/runs/'+active+'/respond',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:handoffToken,decision,answer:$('#answer').value})}); $('#handoff').hidden=true; error(''); }
+      catch(e) { error(e.message); }
+      finally { sending=false; document.querySelectorAll('#handoff button').forEach(b=>b.disabled=false); }
+    }
+    $('#answerForm').addEventListener('submit',e=>{e.preventDefault();respond();});
+    $('#approve').addEventListener('click',()=>respond('approve'));
+    $('#reject').addEventListener('click',()=>respond('reject'));
+    const labels = {running:'Working', succeeded:'Completed', failed:'Failed', blocked:'Blocked', waiting_for_input:'Needs your answer', waiting_for_approval:'Needs approval', cancelled:'Cancelled', interrupted:'Interrupted'};
+    function esc(s) { return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    async function api(url, options) { const r=await fetch(url,options); const j=await r.json(); if(!r.ok) throw Error(j.error||'The console could not complete this request.'); return j; }
+    function error(message) { $('#error').textContent=message; $('#error').hidden=!message; }
+    function updateButton() { $('#runButton').disabled=!configured||busy; $('#buttonText').textContent=busy?'Agent is working…':'Run task'; }
+    function updateVision() { const m=$('#mode').value; $('#vision').disabled=m!=='browser'; if(m==='desktop') $('#vision').checked=true; if(m==='files') $('#vision').checked=false; $('#visionHint').textContent=m==='desktop'?'Included for desktop control':m==='browser'?'Send browser images to Gemini':'Available with browser access'; }
+    async function setup() {
+      try { const j=await api('/api/config'); if(j.ui_protocol!==2) { configured=false; $('#providerState').textContent='Restart required'; throw Error('The console server is running an older version. Press Ctrl+C in its terminal, run python main.py ui again, then refresh this page.'); } configured=j.key_configured; $('#setup').hidden=configured; $('#providerState').textContent=configured?'Gemini configured':'Setup needed'; }
+      catch(e) { error('Unable to check console setup: '+e.message); }
+      updateButton();
+    }
+    async function loadSkills() {
+      try { const j=await api('/api/skills'); for(const s of j.skills) { const o=document.createElement('option'); o.value=s; o.textContent=s.replaceAll('_',' '); $('#skill').append(o); } }
+      catch(e) { error('Could not load task skills: '+e.message); }
+    }
+    async function history() {
+      try { const j=await api('/api/runs'); $('#history').innerHTML=j.runs.length?j.runs.slice(0,5).map(x=>`<article class="runitem"><p title="${esc(x.summary||x.id)}">${esc(x.summary||x.id)}</p><small>${esc(labels[x.status]||x.status)}${x.steps===null?'':` · ${esc(x.steps)} steps`} · ${esc(x.id)}</small></article>`).join(''):'<p class="history-empty">Your completed runs will appear here.</p>'; }
+      catch(e) { $('#history').textContent='Could not load run history: '+e.message; }
+    }
+    async function poll() {
+      if(!active) return;
+      try {
+        const j=await api('/api/runs/'+active);
+        if(typeof j.active!=='boolean') throw Error('The console server is running an older version. Restart python main.py ui, then refresh this page.');
+        $('#runStatus').textContent=labels[j.status]||j.status; $('#runStatus').className='status '+j.status;
+        $('#runMeta').hidden=false; $('#runId').textContent=j.run_id||'Starting local run'; $('#elapsed').textContent=j.elapsed+'s';
+        consoleBox.className='console'; consoleBox.textContent=j.output||'Starting the agent…'; consoleBox.scrollTop=consoleBox.scrollHeight;
+        $('#copyOutput').hidden=!j.output; $('#activityFoot').className='activity-foot'+(j.status==='running'?' working':'');
+        showHandoff(j);
+        $('#activityHint').textContent=j.status==='running'?'Reading live agent output':j.status.startsWith('waiting_')?'Waiting for your response':'Run output saved locally';
+        if(!j.active) { active=null; busy=false; sessionStorage.removeItem('wishRun'); updateButton(); history(); return; }
+      } catch(e) { error('Could not read run status: '+e.message+' Refresh this page to reconnect.'); return; }
+      setTimeout(poll,1100);
+    }
+    $('#taskForm').addEventListener('submit',async e=>{
+      e.preventDefault(); error(''); busy=true; updateButton();
+      try { const j=await api('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:$('#task').value,skill:$('#skill').value,mode:$('#mode').value,approval_policy:$('#policy').value,vision:$('#vision').checked,record:$('#record').checked})}); active=j.id; sessionStorage.setItem('wishRun',active); poll(); }
+      catch(e) { busy=false; error(e.message); updateButton(); setup(); }
+    });
+    $('#task').addEventListener('input',()=>$('#charCount').textContent=$('#task').value.length.toLocaleString()+' / 4,000');
+    $('#example').addEventListener('click',()=>{ $('#task').value='Create wish_note.txt containing exactly: My agent is ready. Read it back and verify its contents.'; $('#task').dispatchEvent(new Event('input')); $('#task').focus(); });
+    $('#mode').addEventListener('change',updateVision);
+    $('#copyOutput').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(consoleBox.textContent); $('#copyOutput').textContent='Copied'; setTimeout(()=>$('#copyOutput').textContent='Copy output',1800);}catch{error('The browser could not copy output. Select the text to copy it manually.');}});
+    document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>{document.querySelectorAll('.nav a').forEach(n=>n.classList.remove('active'));a.classList.add('active');if(a.hash==='#skills')$('#skill').focus();}));
+    loadSkills(); history(); updateVision();
+    setup().then(()=>{if(!configured)return;return api('/api/active').then(j=>{active=j.id;busy=!!active;updateButton();if(active){sessionStorage.setItem('wishRun',active);poll();}else sessionStorage.removeItem('wishRun');});}).catch(e=>error('Could not reconnect: '+e.message));
+  </script>
+</body>
+</html>
